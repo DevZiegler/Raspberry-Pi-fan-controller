@@ -1,0 +1,20 @@
+{
+    "pwm": {
+        "pin": 24,
+        "frequency": 100,
+        "maxDutyCycle": 31
+    },
+    "speedometer": {
+        "pin": 26
+    },
+    "general": {
+        "destTemp": 35,
+        "maxTemp": 60,
+        "bufferSize": 10,
+        "checkFrequency": 10,
+        "sleepTime": 5,
+        "pidAggressiveness": 1
+    },
+    "rpm": {
+    }
+}
