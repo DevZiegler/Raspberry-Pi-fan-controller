@@ -39,7 +39,7 @@ pip install simple-pid
 * Start luncher.sh once for the RPM calibration
 * add luncher.sh to /etc/rc.local and reboot
 
-The circuit was designed with the help of the forum participants of [mikrocontroller.net](https://www.mikrocontroller.net/topic/492831).
+The circuit was designed with the help of the forum participants of [mikrocontroller.net](https://www.mikrocontroller.net/topic/492831) for a 5V/0.05A Fan.
 
 
 ![electronic circuit](/images/fan_control.png)
