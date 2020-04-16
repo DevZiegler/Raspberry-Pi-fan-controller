@@ -39,8 +39,8 @@ def getRPM():
     currentCounter = interruptCounter
     interruptCounter = 0
     currentTime = datetime.datetime.now()
-    timespanInSeconds = millis_interval(lastRPMAccessTime, currentTime) / 1000
-    calcRPM = currentCounter / timespanInSeconds * 60
+    timespanInSeconds = millis_interval(lastRPMAccessTime, currentTime)
+    calcRPM = int(currentCounter / timespanInSeconds * 60000)
     lastRPMAccessTime = currentTime
     return calcRPM
 
@@ -53,18 +53,13 @@ def emergencyMode(PWMController):
 
 def output(text, lvl=0):    
     if lvl == 0:
-        text = "INFO: " + text
         myLog.info(text)
     if lvl == 1:
-        text = "WARNING: " + text
         myLog.warning(text)
     if lvl == 2:
-        text = "ERROR: " + text
         myLog.error(text)
     if lvl == 3:
-        text = "EXCEPTION: " + text
         myLog.exception(text)
-    print(text)
 
 
 
@@ -82,10 +77,14 @@ logFile = sys.argv[2]
 diffTemp = None
 sleepTime = None
 checkFrequency = None
-       
+
+logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s',
+                    level=logging.INFO,
+                    datefmt='%Y-%m-%d %H:%M:%S')
+                    
 myLog = logging.getLogger("Rotationg log")
 myLog.setLevel(logging.INFO)
-handler = RotatingFileHandler(logFile, maxBytes=51200, backupCount=1)
+handler = RotatingFileHandler(logFile, maxBytes=51200, backupCount=5)
 myLog.addHandler(handler)
 
 output("StartUp with parameters '[%s,%s]'" % (configFile, logFile))
@@ -153,7 +152,7 @@ def checkRPMSection(PWMController, configData):
             sleep(5)
             getRPM()
             sleep(10)
-            configData['rpm'][str(i)] = round(getRPM(),0)
+            configData['rpm'][str(i)] = int(getRPM())
             output('%s RPM were measured' % configData['rpm'][str(i)],0)
 
     if newData:
@@ -201,7 +200,7 @@ if __name__ == '__main__':
                 lowerRPM = config['rpm'][str(lowerDC)]
                 upperRPM = config['rpm'][str(upperDC)]
                 
-                expectedRPM = round(lowerRPM + ((upperRPM - lowerRPM) * (dutyCycle - lowerDC)),0)
+                expectedRPM = int(lowerRPM + ((upperRPM - lowerRPM) * (dutyCycle - lowerDC)))
                 upperBounder = expectedRPM + 600.0
                 lowerBounder = expectedRPM - 600.0
                 
@@ -258,7 +257,9 @@ if __name__ == '__main__':
             if newDutyCycle != dutyCycle:
                 dutyCycle = max(min(newDutyCycle,config['pwm']['maxDutyCycle']),0)
                 pwmController.ChangeDutyCycle(dutyCycle)
-            output("Temp: '%s'; next DC '%.1f' ; pid DC '%.1f' ; old DC '%.1f' (measured RPM '%.0f', expected RPM '%.0f')" % (currentTemp, dutyCycle, currentDutyCycle, oldDutyCycle, currentRPM, expectedRPM),0)
+            output("Temp: '%s'; next DC '%.1f' ; pid DC '%.1f' ; old DC '%.1f' (measured RPM '%d', expected RPM '%d')" % (currentTemp, dutyCycle, currentDutyCycle, oldDutyCycle, currentRPM, expectedRPM),0)
+            with open("rpm", "w") as f:
+                f.write(str(currentRPM))
             
             
     except KeyboardInterrupt:
