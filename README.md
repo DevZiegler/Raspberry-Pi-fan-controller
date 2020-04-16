@@ -7,13 +7,46 @@ The electronic circuit is inverted, so the fan runs at full power when no PWM si
 For monitoring, the speedometer of the fan is periodically evaluated by an interrupt routine.
 
 
-## Setup
+## Installation
 * Clone the repo
 * Install PID Controller
 ```
-pip install simple-pid
+ pip install simple-pid
 ```
-* Setup config.json
+* Make launcher.sh executable
+```
+ chmod +x launcher.sh
+```
+
+### Optional status plugin for LXPanel
+Build LXPanel Plugin by yourself.
+* Modify rpm.c, set the correct PATH
+```
+ line 10: #define PATH ".../rpm"
+```
+* Install dependencies
+```
+ sudo apt install lxpanel-dev
+```
+* Build plugin (run from lxpanel-rpm-plugin)
+```
+ gcc -Wall `pkg-config --cflags gtk+-2.0 lxpanel` -shared -fPIC rpm.c -o rpm.so `pkg-config --libs lxpanel`
+```
+
+Alternatively the already created plugin rpm.so can be used.
+* Refresh frequency is set to 1 second
+* Path is set to "/home/pi/Raspberry-Pi-fan-controller/rpm"
+
+
+Copy the rpm.so into the LXPanel plugin directory.
+```
+ sudo cp rpm.so /usr/lib/arm-linux-gnueabihf/lxpanel/plugins/rpm.so
+```
+* Add to LXPanel
+
+
+## Setup System
+* Set parameter in config.json
 ```
 {
     "pwm": {
@@ -38,6 +71,9 @@ pip install simple-pid
 ```
 * Start luncher.sh once for the RPM calibration
 * add luncher.sh to /etc/rc.local and reboot
+```
+ sudo nano /etc/rc.local
+```
 
 The circuit was designed with the help of the forum participants of [mikrocontroller.net](https://www.mikrocontroller.net/topic/492831) for a 5V/0.05A Fan.
 
