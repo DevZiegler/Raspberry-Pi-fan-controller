@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import os.path
 import sys
 import json
 import math
@@ -21,6 +22,10 @@ def getCPUtemperature():
 def fanOFF(PWMController):
     PWMController.ChangeDutyCycle(100)  # switch fan off
     # todo: disable power circuit!
+    
+def fanON(PWMController):
+    PWMController.ChangeDutyCycle(0)  # switch fan on
+    # todo: enable power circuit!
 
 def countInterrupt(Channel):
     global interruptCounter
@@ -45,11 +50,20 @@ def getRPM():
     return calcRPM
 
 def emergencyMode(PWMController):
-    output('!*!*!*!*! Run emergency mode, turn Fan off', 3)
     fanOFF(PWMController)
+    output('!*!*!*!*! Run emergency mode, turn Fan off', 2)            
+    with open("rpm", "w") as f:
+        f.write("ERROR")
     while True:
         sleep(10)
-        output('!*!*!*!*! Run emergency mode, turn Fan off', 3)
+        output('!*!*!*!*! Run emergency mode, turn Fan off', 2)
+        if os.path.isfile('restart'):
+            os.remove('restart')
+            output('!*!*!*!*! restart Fan', 0)
+            fanON(PWMController)
+            sleep(1)
+            break
+
 
 def output(text, lvl=0):    
     if lvl == 0:
@@ -208,6 +222,7 @@ if __name__ == '__main__':
                     output('RPM not in boundary: current dutyCycle "%s", measured RPM "%s", expected RPM "%s", upper RPM "%s", lower RPM "%s" ' % (dutyCycle, currentRPM, expectedRPM, upperBounder, lowerBounder),1)
                     if errorCount >= 5:
                         emergencyMode(pwmController)
+                        errorCount = 0
                     errorCount+=1
                 else:
                     errorCount = 0
